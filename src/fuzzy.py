@@ -104,7 +104,7 @@ class Fuzzy:
         # 名前の生成
         # モノリシックな集合でなければカッコをつける
         self_newname = self.name if self._is_monolithic else f"({self.name})"
-        newname = "NOT" + self_newname
+        newname = "NOT " + self_newname
 
         new_fuzzy = Fuzzy(self.base, result, newname)
         new_fuzzy._is_monolithic = False

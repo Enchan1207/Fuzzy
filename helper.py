@@ -16,7 +16,7 @@ def init_canvas(figsize: Tuple[int, int], size: Tuple[int, int]) -> List[Axis]:
         raise ValueError("size must be width,height")
 
     plt.figure(figsize=figsize, facecolor="#EEE")
-    return [plt.subplot(size[0], size[1], n + 1) for n in range(size[0] + size[1])]
+    return [plt.subplot(size[0], size[1], n + 1) for n in range(size[0] + size[1] - 1)]
 
 
 def draw(sets: List[Fuzzy], to: Axes, primaryindex: Optional[Tuple[int]] = None):

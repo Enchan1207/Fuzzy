@@ -90,4 +90,4 @@ class NOTNode(NodeBase):
     @property
     def latex_repr(self) -> str:
         node_repr = self.node.latex_repr if self.node.is_monolithic else f"({self.node.latex_repr})"
-        return f"\bar{{{node_repr}}}"
+        return r"\overline{" + node_repr + r"}"

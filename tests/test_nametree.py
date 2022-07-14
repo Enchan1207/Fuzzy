@@ -33,7 +33,7 @@ class test_NameNode(TestCase):
 
         NOT_A = NOTNode(A)
         self.assertEqual(NOT_A.str_repr, "NOT A")
-        self.assertEqual(NOT_A.latex_repr, "\bar{A}")
+        self.assertEqual(NOT_A.latex_repr, r"\overline{A}")
 
     def test_nested_operation(self):
         """複数の集合のネスト演算
@@ -48,4 +48,4 @@ class test_NameNode(TestCase):
 
         NOT_A_AND_NOT_B = ANDNode(NOTNode(A), NOTNode(B))
         self.assertEqual(NOT_A_AND_NOT_B.str_repr, "NOT A AND NOT B")
-        self.assertEqual(NOT_A_AND_NOT_B.latex_repr, "\bar{A} \cap \bar{B}")
+        self.assertEqual(NOT_A_AND_NOT_B.latex_repr, r"\overline{A} \cap \overline{B}")

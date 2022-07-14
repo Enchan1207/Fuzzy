@@ -40,7 +40,8 @@ def draw(sets: List[Fuzzy], to: Axes, primaryindex: Optional[Tuple[int]] = None)
         # 描画
         underlying = fuzzy.base
         values = np.array(list(fuzzy.grade.values())) + padding
-        to.plot(underlying, values, color=linecolor, linestyle=linestyle, label=fuzzy.name)
+        label = fuzzy.namenode.latex_repr
+        to.plot(underlying, values, color=linecolor, linestyle=linestyle, label=f"${label}$")
 
         if has_scatter:
             to.scatter(underlying, values, color="#444", s=20)

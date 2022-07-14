@@ -94,3 +94,7 @@ class Fuzzy:
     def set_repr(self) -> str:
         # グレード値が0でないもののみ列挙
         return ','.join([f"{item[1]:.1f}/{item[0]}" for item in list(filter(lambda n: n[1] > 0.0, self.grade.items()))])
+
+    @property
+    def formula_repr(self) -> str:
+        return f"{self.namenode.str_repr} = {{{self.set_repr}}}"

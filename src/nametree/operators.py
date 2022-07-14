@@ -80,7 +80,7 @@ class NOTNode(NodeBase):
 
     @property
     def is_monolithic(self) -> bool:
-        return False
+        return True
 
     @property
     def str_repr(self) -> str:

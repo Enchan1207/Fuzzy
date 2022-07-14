@@ -3,26 +3,28 @@
 #
 
 from __future__ import annotations
+
 from functools import reduce
-from typing import Dict, List
+from typing import Dict, List, Union
+
+from .nametree import ANDNode, NameNode, NodeBase, NOTNode, ORNode
 
 
 class Fuzzy:
     """離散ファジィ集合
     """
 
-    def __init__(self, base: List[int], grade: Dict[int, float], name) -> None:
+    def __init__(self, base: List[int], grade: Dict[int, float], name: Union[str, NodeBase]) -> None:
         """ファジィ集合の初期化
 
         Args:
             base (List[int]): 台集合
             grade (Dict[int, float]): グレード値
-            name: 集合名
+            name (Union[str, NodeBase]): 集合名
         """
 
         self.base = base
-        self.name = name
-        self._is_monolithic = True  # 単体かどうか
+        self.namenode: NodeBase = name if isinstance(name, NodeBase) else NameNode(name)
 
         # バリデーション
         if list(filter(lambda i: i < 0.0 or i > 1.0, grade.values())) != []:
@@ -34,13 +36,13 @@ class Fuzzy:
             self.grade[key] = grade.get(key) or 0.0
 
     @staticmethod
-    def parse_from(base: List[int], repr: str, name: str) -> Fuzzy:
+    def parse_from(base: List[int], repr: str, name: Union[str, NodeBase]) -> Fuzzy:
         """台集合と文字列表現からファジィ集合を生成します.
 
         Args:
             base (List[int]): 台集合
             repr (str): 文字列表現(表現1)
-            name: 集合名
+            name (Union[str, NodeBase]): 集合名
 
         Note:
             文字列表現は以下のフォーマットである必要があります:  
@@ -52,10 +54,11 @@ class Fuzzy:
 
         grade: Dict[int, float] = reduce(lambda a, b: a | b, [{int(l[1]): float(l[0])} for l in [
             i.split("/") for i in repr.split(",")]])
-        return Fuzzy(base, grade, name)
+        namenode: NodeBase = name if isinstance(name, NodeBase) else NameNode(name)
+        return Fuzzy(base, grade, namenode)
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}(\n\tname:{self.name}\n\t{self.base}\n\t{self.grade}\n)"
+        return f"{self.__class__.__name__}(\n\tname:{self.namenode.str_repr}\n\t{self.base}\n\t{self.grade}\n)"
 
     def __and__(self, other: Fuzzy) -> Fuzzy:
         if self.base != other.base:
@@ -66,15 +69,7 @@ class Fuzzy:
         for key, value_self, value_other in zip(self.grade.keys(), self.grade.values(), other.grade.values()):
             result[key] = value_self if value_self < value_other else value_other
 
-        # 名前の生成
-        # モノリシックな集合でなければカッコをつける
-        self_newname = self.name if self._is_monolithic else f"({self.name})"
-        other_newname = other.name if other._is_monolithic else f"({other.name})"
-        newname = self_newname + " AND " + other_newname
-
-        new_fuzzy = Fuzzy(self.base, result, newname)
-        new_fuzzy._is_monolithic = False
-        return new_fuzzy
+        return Fuzzy(self.base, result, ANDNode(self.namenode, other.namenode))
 
     def __or__(self, other: Fuzzy) -> Fuzzy:
         if self.base != other.base:
@@ -85,15 +80,7 @@ class Fuzzy:
         for key, value_self, value_other in zip(self.grade.keys(), self.grade.values(), other.grade.values()):
             result[key] = value_self if value_self > value_other else value_other
 
-        # 名前の生成
-        # モノリシックな集合でなければカッコをつける
-        self_newname = self.name if self._is_monolithic else f"({self.name})"
-        other_newname = other.name if other._is_monolithic else f"({other.name})"
-        newname = self_newname + " OR " + other_newname
-
-        new_fuzzy = Fuzzy(self.base, result, newname)
-        new_fuzzy._is_monolithic = False
-        return new_fuzzy
+        return Fuzzy(self.base, result, ORNode(self.namenode, other.namenode))
 
     @property
     def inversed(self) -> Fuzzy:
@@ -101,14 +88,7 @@ class Fuzzy:
         for key, value in self.grade.items():
             result[key] = 1.0 - value
 
-        # 名前の生成
-        # モノリシックな集合でなければカッコをつける
-        self_newname = self.name if self._is_monolithic else f"({self.name})"
-        newname = "NOT " + self_newname
-
-        new_fuzzy = Fuzzy(self.base, result, newname)
-        new_fuzzy._is_monolithic = False
-        return new_fuzzy
+        return Fuzzy(self.base, result, NOTNode(self.namenode))
 
     @property
     def set_repr(self) -> str:
